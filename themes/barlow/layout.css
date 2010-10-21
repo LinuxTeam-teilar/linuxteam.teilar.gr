@@ -1,0 +1,35 @@
+#wrapper {
+  max-width: 95%;
+  margin: 0 auto 0 auto;
+}
+.one-sidebar #wrapper {
+  width: 750px;
+}
+.two-sidebars #wrapper {
+  width: 910px;
+}
+#header #logo, #branding, #main, .sidebar {
+  float: left;
+}
+#search, #header-additional {
+  float: right;
+}
+#menu, #content, #footer {
+  clear: both;
+}
+#main {
+  width: 500px;
+  padding: 2em 35px 1.5em 35px;
+}
+.sidebar {
+  width: 170px;
+}
+#sidebar-left {
+  margin-right: -1px;
+}
+#sidebar-right {
+  margin-left: -1px;
+}
+#footer {
+  width: 100%;
+}

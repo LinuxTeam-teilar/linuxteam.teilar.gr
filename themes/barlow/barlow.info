@@ -1,0 +1,21 @@
+name = Barlow
+description = A sober but stylish theme, good for blogs.
+core = 6.x
+engine = phptemplate
+stylesheets[all][] = typography.css
+stylesheets[all][] = layout.css
+stylesheets[all][] = style.css
+
+regions[left] = Left sidebar
+regions[right] = Right sidebar
+regions[before_content] = Before content
+regions[content] = Content
+regions[header] = Header
+regions[footer] = Footer
+
+; Information added by drupal.org packaging script on 2007-11-09
+version = "6.x-1.0"
+core = "6.x"
+project = "barlow"
+datestamp = "1194596703"
+
