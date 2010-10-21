@@ -1,0 +1,39 @@
+#!/bin/bash
+# A simple help script to update the drupal core module
+# Author: Theo Chatzimichos <tampakrap@gentoo.org>
+
+# Run it passing the drupal version as argument e.g.
+# ./drupal-update 6.19
+# It will ask for sudo password (assuming your user is in webmaster group)
+
+# For a full update, the following steps are required:
+# 1) log in as user with ID 1
+# 2) go to http://mysite/admin/settings/site-maintainance and put your site in maintainance mode
+# 3) run the script ./drupal-update (version)
+# 4) got to http://mysite/update.php to update the database
+# 5) (assuming no errors were reported) put the site in normal mode again
+# 6) log in as your regular user
+
+SITE_PATH="/var/www/linuxteam.cs.teilar.gr/"
+BACKUP_SITE="/var/www/drupal-site-bak/"
+
+wget http://ftp.drupal.org/files/projects/drupal-"${1}".tar.gz -O /tmp/drupal-update.tar.gz
+echo "wget done"
+
+mv ${SITE_PATH} ${BACKUP_SITE}
+echo "backup done"
+
+tar xzf /tmp/drupal-update.tar.gz -C /tmp
+echo "unpacking done"
+
+mv /tmp/drupal-"${1}" ${SITE_PATH}
+echo "move of unpacked done"
+
+rm -rf ${SITE_PATH}sites/
+echo "useless sites/ deleted"
+
+mv ${BACKUP_SITE}sites/ ${SITE_PATH}
+echo "moved old sites/ to the updated drupal"
+
+rm -rf ${BACKUP_SITE} /tmp/drupal*
+echo "delete backup site and tarball"
