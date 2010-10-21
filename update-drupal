@@ -9,7 +9,7 @@
 # For a full update, the following steps are required:
 # 1) log in as user with ID 1
 # 2) go to http://mysite/admin/settings/site-maintainance and put your site in maintainance mode
-# 3) run the script ./drupal-update (version)
+# 3) run the script ./update-drupal (version)
 # 4) got to http://mysite/update.php to update the database
 # 5) (assuming no errors were reported) put the site in normal mode again
 # 6) log in as your regular user
