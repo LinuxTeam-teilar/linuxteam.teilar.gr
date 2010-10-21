@@ -1,44 +1,12 @@
-; $Id: gallery_assist.info,v 1.11 2009/12/03 14:17:26 jcmc Exp $
+; $Id: gallery_assist.info,v 1.36 2010/06/01 16:07:50 jcmc Exp $
 name = Gallery Assist
-description = "Drupal content type with gallery functionality."
+description = Drupal content type with gallery functionality. <br /><a href="http://drupal.org/project/gallery_assist#additional_modules" target="_blank">Additional modules.</a>, <a href="http://simple.puntolatinoclub.de/docu/gallery-assist" target="_blank">Visit the documentation.</a>
 package = "Media"
 core = 6.x
 
-; Information added by drupal.org packaging script on 2009-10-11
-version = "6.x-1.5"
+; Information added by drupal.org packaging script on 2010-06-01
+version = "6.x-1.15"
 core = "6.x"
 project = "gallery_assist"
-datestamp = "1255222841"
-
-
-; Information added by drupal.org packaging script on 2009-10-17
-version = "6.x-1.6"
-core = "6.x"
-project = "gallery_assist"
-datestamp = "1255799737"
-
-; Information added by drupal.org packaging script on 2009-11-18
-version = "6.x-1.7"
-core = "6.x"
-project = "gallery_assist"
-datestamp = "1258572374"
-
-
-; Information added by drupal.org packaging script on 2009-11-19
-version = "6.x-1.8-beta1"
-core = "6.x"
-project = "gallery_assist"
-datestamp = "1258620336"
-
-; Information added by drupal.org packaging script on 2009-12-03
-version = "6.x-1.1-beta5"
-core = "6.x"
-project = "gallery_assist"
-datestamp = "1259843442"
-
-; Information added by drupal.org packaging script on 2009-12-03
-version = "6.x-1.8"
-core = "6.x"
-project = "gallery_assist"
-datestamp = "1259857541"
+datestamp = "1275408907"
 

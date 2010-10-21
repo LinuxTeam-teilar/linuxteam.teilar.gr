@@ -1,13 +1,16 @@
 <?php
-// $Id: gallery_assist_list_display.inc,v 1.0 2009/11/22 03:09:34 jcmc Exp $
+// $Id: gallery_assist_list_display.inc,v 1.x 2009/11/22 03:09:34 jcmc Exp $
 
 /**
  * @file
- * Display the gallery container as list.
+ * Build and display the Gallery Assist Container.
+ * This file will be included if the parameter "show_layout" is setted to "list"
+ * 
+ * @see gallery_assist_include_display().
  */
 
 /**
- * Display gallery container as list. 
+ * Display the Gallery Assist Container as list.
  */
 function gallery_assist_display_list($node, $opt='', $owner='') {
   global $user;
@@ -15,7 +18,7 @@ function gallery_assist_display_list($node, $opt='', $owner='') {
   $conf = $node->gallconf[$node->type];
   $conf['show_title'] = 0;
 
-  $my_teaser_count = 1; // $conf['items_per_row'];
+  $my_teaser_count = 1;
 
   $my_page_count = $conf['items_per_row'] == 'unlimited' ? count($node->gallitems) : $conf['items_per_row'] * $conf['rows_per_page'];
   if ($conf['items_per_row'] == 'unlimited' && $opt == 'teaser') {
@@ -45,6 +48,7 @@ function gallery_assist_display_list($node, $opt='', $owner='') {
     
     $node->gallitems[$pid]->row = $i&1 ? 'odd' : 'even';
 
+    $node->gallitems[$pid]->my_nid = $node->nid;
     $my_item_box = gallery_assist_item_box_list($node->type, $node->gallitems[$pid], $conf, $img_obj);
     $my_boxes[] = $my_item_box;
     ++$i;
@@ -201,6 +205,7 @@ function gallery_assist_display_list($node, $opt='', $owner='') {
   }
 
   $node->gallconf[$node->type]['my_attr'] = $node->gallconf[$node->type]['items_per_row'] == 'unlimited' ? '' : drupal_attributes($my_attr_array);
+  $node->gallconf[$node->type]['nid'] = $node->nid;
 
   if ($owner == 'block') {
     $num = count($my_boxes) < $conf['block_gallery_visibles'] ? count($my_boxes) :  $conf['block_gallery_visibles'];
@@ -212,8 +217,7 @@ function gallery_assist_display_list($node, $opt='', $owner='') {
     }
     
     $b_invlisten = count($my_boxes) ? implode($my_boxes) : '';
-    
-    return theme('gallery_assist_block_display', $b_boxes.$b_invlisten, $node->gallconf[$node->type], $node->type);
+    return theme('gallery_assist_block_display', $b_boxes . $b_invlisten, $node->gallconf[$node->type], $node->type);
   }
   else {
     return theme('gallery_assist_display_list', $pager, $boxes, $node->gallconf[$node->type], $node->type);
@@ -223,13 +227,19 @@ function gallery_assist_display_list($node, $opt='', $owner='') {
 /**
  * Build and return the gallery item box.
  */
-function gallery_assist_item_box_list($type, &$item, $conf, $img) {
+function gallery_assist_item_box_list($type, $item, $conf, $img) {
   global $user;
 
   $item->nodetype = $type;
-  $my_title_height = 0; // $item->show_title == 1 && $conf['thumbnail_size'] >= 100 ? 30 : 0;
+  $my_title_height = 0;
   $my_item_width = $conf['thumbnail_size'] + $conf['thumbnail_size_plus'] + ($conf['item_padding'] * 2) + ($conf['item_border'] * 2);
-  $my_item_height = $conf['thumbnail_size'] + ($conf['item_padding'] * 2) + ($conf['item_border'] * 2) + $my_title_height; // $conf['thumbnail_size'] + 
+
+  if (variable_get('gallery_assist_use_imagecache', 0) == 1 && $conf['force_image_height'] == 1) {
+    $my_item_height = $conf['thumbnail_height_size'] + ($conf['item_padding'] * 2) + ($conf['item_border'] * 2) + $my_title_height;
+  }
+  else {
+    $my_item_height = $conf['thumbnail_size'] + ($conf['item_padding'] * 2) + ($conf['item_border'] * 2) + $my_title_height;
+  }
 
   $my_item_list_box = array(
     'id' => 'item-box-row-'. $item->pid,
@@ -240,26 +250,28 @@ function gallery_assist_item_box_list($type, &$item, $conf, $img) {
   $my_item_attr = array(
     'id' => 'item-box-'. $item->pid,
     'class' => $type .' item-box',
-    'style' => 'width:'. $my_item_width .'px;', //'height:'. $my_item_height .'px;'.
+    'style' => 'width:'. $my_item_width .'px;',
   );
+  $my_item_attr['style'] .= 'position:relative;';
 
   if ($conf['item_margin'] > 0) {
     $top_margin = $conf['item_margin'] / 2;
-  }
+  }  
     $right_margin = $conf['item_margin'] > 10 ? $conf['item_margin'] : 10;
     $my_item_attr['style'] .= 'margin-right:'. $right_margin .'px;margin-top:'. $top_margin .'px;';
 
-  $link = l('edit', 'node/gallery_assist/'. $item->nid .'/'. $item->pid);
-  $a_link = '<div id="image-box-'. $item->pid .'-links" class="'. $type .' image-box-links">[ '. $link .' ]</div>';
+  //$link = l('edit', 'node/gallery_assist/'. $item->nid .'/'. $item->pid);
+  //$a_link = '<div id="image-box-'. $item->pid .'-links" class="'. $type .' image-box-links">[ '. $link .' ]</div>';
+  //$link = l('edit', 'node/gallery_assist/'. $item->nid .'/'. $item->pid);
+  //$a_link = '<div id="image-box-'. $item->pid .'-links" class="'. $type .' image-box-links">[ '. $link .' ]</div>'."\n";
 
   $ga_item_attr  = drupal_attributes($my_item_attr);
   $ga_item_list_attr  = drupal_attributes($my_item_list_box);
-  $edit_link  = $user->uid == $item->uid ? $a_link : '';
+  //$edit_link  = $user->uid == $item->uid ? $a_link : '';
+  //$edit_link  = $user->uid == $item->uid ? $a_link : '';
   $ga_item_box   = gallery_assist_image_box_list($type, $item, $conf, $img);
-  //$ga_item_title = $item->show_title == 1 && $conf['thumbnail_size'] >= 100 ? gallery_assist_title_box($item, $conf) : '';
-  //$ga_item_desc = 'lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa lorem ipsum loraine cacao ventiosa ';
-  $ga_item_desc = $item->pdescription;
-  $ga_edit_link  = $_GET['links'] == 'on' ? $edit_link : '';
+  $ga_item_desc = '<div class="list-desc-container" style="padding-left:'. ($my_item_width + $right_margin) .'px;">'. $item->pdescription .'</div>';
+  //$ga_edit_link  = $_GET['links'] = 'off' ? $edit_link : '';
   $ga_item_copyright = _filter_html(_filter_url($item->copyright, 1), 1);
 
   $output = theme('gallery_assist_item_box_list', $ga_item_list_attr, $ga_item_box, $item->ptitle, $ga_item_copyright, $ga_item_desc, $ga_edit_link, $ga_item_attr);
@@ -267,6 +279,11 @@ function gallery_assist_item_box_list($type, &$item, $conf, $img) {
   return $output;
 }
 
+/**
+ * Theme the Gallery Assist Item-Box.
+ *
+ * @ingroup themeable
+ */
 function theme_gallery_assist_item_box_list($ga_item_list_attr, $ga_item_box, $ga_item_title, $ga_item_copyright, $ga_item_desc, $ga_edit_link = '', $ga_item_attr) {
   $output  = '      <!-- Gallery Assist Item -->'."\n";
   $output .= '      <div'. $ga_item_list_attr .'>'."\n";
@@ -274,8 +291,8 @@ function theme_gallery_assist_item_box_list($ga_item_list_attr, $ga_item_box, $g
   $output .= $ga_edit_link;
   $output .= $ga_item_box;
   $output .= '        </div>'."\n";
-  $output .= '        <div class="title-box-on-list">'.$ga_item_title  .'</div>'."\n";
-  $output .= !empty($ga_item_copyright) ? '        <div id="gallery-item-copyright" class="gallery-item-copyright">&copy; '.$ga_item_copyright  .'</div>'."\n" : '';
+  $output .= '        <div class="title-box-on-list">'. $ga_item_title .'</div>'."\n";
+  $output .= !empty($ga_item_copyright) ? '        <div id="gallery-item-copyright" class="gallery-item-copyright">&copy; '. $ga_item_copyright .'</div>'."\n" : '';
   $output .= $ga_item_desc ."\n";
   $output .= '      </div>'."\n";
 
@@ -285,75 +302,130 @@ function theme_gallery_assist_item_box_list($ga_item_list_attr, $ga_item_box, $g
 /**
  * Build and return the image box. 
  */
-function gallery_assist_image_box_list($type, &$item, $conf, $img) {
+function gallery_assist_image_box_list($type, $item, $conf, $img) {
   if ($conf['shadow'] == 1) {
     $withshadow = ' shadow3';
     drupal_add_css(drupal_get_path('module', 'gallery_assist') .'/css/gallery_assist_shadow.css', 'module', 'all', FALSE);
   }
+  
+  if (variable_get('gallery_assist_use_imagecache', 0) == 1 && $conf['force_image_height'] == 1) {
+    $my_image_height = $conf['thumbnail_height_size'];
 
-  $my_box_attr = array(
-    'id' => 'image-box-'. $item->pid,
-    'class' => $type .' image-box'. $withshadow,
-    'style' => 'height:'. $conf['thumbnail_size'] + ($conf['item_padding'] * 2) .'px;'.
-               'width:'. $conf['thumbnail_size'] + ($conf['item_padding'] * 2) .'px;',
-  );
-
-  if ($conf['item_padding'] > 0) {
-    $my_box_attr['style'] .= 'padding:'. $conf['item_padding'] .'px;';
+    $my_box_attr = array(
+      'id' => 'image-box-'. $item->pid,
+      'class' => $type .' image-box'. $withshadow,
+      'style' => 'height:'. $my_image_height .'px;'.
+                 'width:'. $conf['thumbnail_size'] + ($conf['item_padding'] * 2) .'px;',
+    );
+  
+    if ($conf['item_padding'] > 0) {
+      $my_box_attr['style'] .= 'padding:'. $conf['item_padding'] .'px;';
+    }
+  
+    if ($conf['item_border'] > 0) {
+      $my_box_attr['style'] .= 'border:'. $conf['item_border'] .'px solid '. $conf['item_border_color'] .';';
+    }
+  
+    $my_sheet_attr = array(
+      'id' => 'image-sheet-'. $item->pid,
+      'class' => $type .' image-sheet'. $my_img_behavior,
+      'style' => 'height:'. $my_image_height .'px;'.
+                 'width:'. $conf['thumbnail_size'] .'px;',
+    );
+  
+    $img = gallery_assist_image_more_info($type, $img, $conf, $my_image_height);
+  
+    $my_layout = $img['pos'] == 'v' ? 'height' : 'width';
+    $my_img_attr = array(
+      $my_layout => $conf['thumbnail_size'],
+      'style' => 'margin-top:'. $img['top'] .'px;',
+    );
   }
+  else {
+    $my_box_attr = array(
+      'id' => 'image-box-'. $item->pid,
+      'class' => $type .' image-box'. $withshadow,
+      'style' => 'height:'. $conf['thumbnail_size'] + ($conf['item_padding'] * 2) .'px;'.
+                 'width:'. $conf['thumbnail_size'] + ($conf['item_padding'] * 2) .'px;',
+    );
+  
+    if ($conf['item_padding'] > 0) {
+      $my_box_attr['style'] .= 'padding:'. $conf['item_padding'] .'px;';
+    }
+  
+    if ($conf['item_border'] > 0) {
+      $my_box_attr['style'] .= 'border:'. $conf['item_border'] .'px solid '. $conf['item_border_color'] .';';
+    }
+  
+    $my_sheet_attr = array(
+      'id' => 'image-sheet-'. $item->pid,
+      'class' => $type .' image-sheet'. $my_img_behavior,
+      'style' => 'height:'. $conf['thumbnail_size'] .'px;'.
+                 'width:'. $conf['thumbnail_size'] .'px;',
+    );
 
-  if ($conf['item_border'] > 0) {
-    $my_box_attr['style'] .= 'border:'. $conf['item_border'] .'px solid '. $conf['item_border_color'] .';';
-  }
+    $edit_link_attr = array(
+      'class' => $type .' ga-item-edit-link',
+      'style' => 'position:absolute;top:0px;left:0px;width:100%;',
+    );
 
-  $my_sheet_attr = array(
-    'id' => 'image-sheet-'. $item->pid,
-    'class' => $type .' image-sheet'. $my_img_behavior,
-    'style' => 'height:'. $conf['thumbnail_size'] .'px;'.
-               'width:'. $conf['thumbnail_size'] .'px;',
-  );
-
-  $img = gallery_assist_image_more_info_list($type, $img, $conf);
-
-  $my_layout = $img['pos'] == 'v' ? 'height' : 'width';
-  $my_img_attr = array(
-    $my_layout => $conf['thumbnail_size'] .'px',
-    'style' => 'margin-top:'. $img['top'] .'px;',
-  );
+    $img = gallery_assist_image_more_info($type, $img, $conf);
+  
+    $my_layout = $img['pos'] == 'v' ? 'height' : 'width';
+    $my_img_attr = array(
+      $my_layout => $conf['thumbnail_size'],
+      'style' => 'margin-top:'. $img['top'] .'px;',
+    );
+  } // Without force.
 
   $item->my_img_attr = $my_img_attr;
   $my_img = gallery_assist_prepare_thms($item, $conf);
 
+  $get_values = $_GET;
+  unset($get_values['q']);
+  $link = l('[edit]', 'node/ga_edit_one/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
+  $a_link = '<div id="image-box-'. $item->pid .'-links" class="'. $type .' image-box-links">[ '. $link .' ]</div>'."\n";
+  $edit_link  = $user->uid == 1 || $user->uid == $item->uid || user_access('edit gallery_assist content', $user) || user_access('edit gallery_assist_'. $type .' content', $user) ? $link : '';
+
   $output  = '<div'. drupal_attributes($my_box_attr) .'>'."\n";
   $output .= '  <div'. drupal_attributes($my_sheet_attr) .'>'."\n";
-  $output .= '    '. l($my_img, 'node/'. $item->nid .'/'. $item->pid, array('html' => TRUE));
+  $output .= '    '. l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE));
   $output .= '  </div>'."\n";
   $output .= '</div>'."\n";
 
-  return $output;
+  $output2  = '<div'. drupal_attributes($my_box_attr) .'>'."\n";
+  $output2 .= '<div'. drupal_attributes($my_sheet_attr) .'>'."\n";
+  $output2 .= '    '. l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE));
+  $output2 .= '</div>'."\n";
+  $output2 .= '</div>'."\n";
+  $output2 .= '<div'. drupal_attributes($edit_link_attr) .'>'. $edit_link .'</div>'."\n";
+
+  return $output2;
 }
 
 /**
  * Build and return the item title box. 
  */
-function gallery_assist_title_box_list(&$item, $conf) {
+function gallery_assist_title_box_list($item, $conf) {
   $points = drupal_strlen($item->ptitle) > $conf['title_substr'] ? "..." : '';
   $title = drupal_substr($item->ptitle, 0, $conf['title_substr']) . $points;
 
   $output  = '<div id="title-box-'. $item->pid .'" class="'. $item->nodetype .' title-box-on-list">'."\n";
-  $output .= l($title, 'node/'. $item->nid .'/'. $item->pid, array('html' => TRUE, 'attributes' => array('title' => $item->ptitle)));
+  $output .= l($title, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE, 'attributes' => array('title' => $item->ptitle)));
   $output .= '</div>'."\n";
 
   return $output;
 }
 
 /**
- * Theme the item output.
+ * Theme the Gallery Assist Container as list.
+ *
+ * @ingroup themeable
  */
-function theme_gallery_assist_display_list(&$pager, &$boxes, $conf, $type = 'gallery_assist') {
+function theme_gallery_assist_display_list($pager, $boxes, $conf, $type = 'gallery_assist') {
   
   $output  = '<!-- Gallery Assist container -->'."\n";
-  $output .= '    <div id="gallery-container" class="'. $type .' gallery-container '. $conf['op'] .'  container-justify-'. $conf['container_justify'] .' container-justify-'. $conf['container_justify'] .' clear-block"'. $conf['$my_attr'] .'>'."\n";
+  $output .= '    <div id="gallery-container-'. $conf['nid'] .'" class="'. $type .' gallery-container '. $conf['op'] .'  container-justify-'. $conf['container_justify'] .' container-justify-'. $conf['container_justify'] .' clear-block"'. $conf['$my_attr'] .'>'."\n";
   $output .= $conf['pager_position'] == 'top' || $conf['pager_position'] == 'both' ? $pager : '';
   $output .= $boxes;
   $output .= $conf['pager_position'] == 'bottom' || $conf['pager_position'] == 'both' ? $pager : '';

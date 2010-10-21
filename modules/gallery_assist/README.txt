@@ -1,4 +1,4 @@
-// $Id: README.txt,v 1.6 2009/12/03 14:17:26 jcmc Exp $
+// $Id: README.txt,v 1.21 2010/05/18 22:27:32 jcmc Exp $
 
 Gallery Assist
 --------------
@@ -10,7 +10,8 @@ http://simple.puntolatinoclub.de
 
 Incompatibilities
 -----------------
-We would be very grateful if you give us feedback in case you get errors or find issues.
+* I would be very grateful if you give us feedback in case you get errors or find issues.
+I thank you in advance.
 
 
 Maintainer
@@ -20,4 +21,3 @@ Juan Carlos Morejon Caraballo
 
 Current maintainer:
 Juan Carlos Morejon Caraballo
-

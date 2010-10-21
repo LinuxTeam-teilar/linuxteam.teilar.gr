@@ -1,4 +1,4 @@
-// $Id: gallery_assist.js, v 1.x.11 2009/08/25 16:32:00 jcmc Exp $
+// $Id: gallery_assist.js, v 1.x 2009/08/25 16:32:00 jcmc Exp $
 // This is only a test behavior
 // drupal_add_js(drupal_get_path('module', 'gallery_assist').'/js/gallery_assist.js', 'module', 'footer');
 

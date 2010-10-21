@@ -1,24 +1,28 @@
 <?php
-// $Id: gallery_assist_display.inc,v 1.12 2009/12/03 14:17:26 jcmc Exp $
+// $Id: gallery_assist_display.inc,v 1.35 2010/06/01 16:07:50 jcmc Exp $
 
 /**
  * @file
- * Display the gallery container.
+ * Build and display the Gallery Assist Container.
+ * This file will be included if the parameter "show_layout" is setted to "grid"
  * 
+ * @see gallery_assist_include_display().
  */
 
 /**
- * Display gallery container. 
+ * Display the Gallery Assist Container as grid.
  */
 function gallery_assist_display($node, $opt='', $owner='') {
   global $user;
 
   $conf = $node->gallconf[$node->type];
 
-  $my_teaser_count = $conf['items_per_row'];
+  //$my_teaser_count = $conf['items_per_row'];
+  $my_teaser_count = $conf['t_items_per_row'] > 0 ?  $conf['t_items_per_row'] : $conf['items_per_row'];
   $my_page_count = $conf['items_per_row'] == 'unlimited' ? count($node->gallitems) : $conf['items_per_row'] * $conf['rows_per_page'];
   if ($conf['items_per_row'] == 'unlimited' && $opt == 'teaser') {
-    $my_teaser_count = 3;
+    //$my_teaser_count = 3;
+    $my_teaser_count = $conf['t_items_per_row'] > 0 ?  $conf['t_items_per_row'] : 3;
   }
   $my_previous = '‹ previous';
   $my_next = 'next ›';
@@ -41,6 +45,7 @@ function gallery_assist_display($node, $opt='', $owner='') {
       $node->gallitems[$pid]->show_title = $node->show_title;
     }
 
+    $node->gallitems[$pid]->my_nid = $node->nid;
     $my_item_box = gallery_assist_item_box($node->type, $node->gallitems[$pid], $conf, $img_obj);
     $my_boxes[] = $my_item_box;
     $block_boxes[] = $my_item_box;
@@ -71,7 +76,12 @@ function gallery_assist_display($node, $opt='', $owner='') {
       $next = "";
     }
     else {
-      $next = l($my_next, $_GET['q'], array('html' => TRUE, 'attributes' => array('class' => $node->type .' pager-next'), 'query' => array('page' => $page, 'titles' => $_GET['titles'])));
+
+      $link_query['page'] = $page;
+      if (isset($_GET['titles'])) {
+        $link_query['titles'] = $_GET['titles'];
+      }
+      $next = l($my_next, $_GET['q'], array('html' => TRUE, 'attributes' => array('class' => $node->type .' pager-next'), 'query' => $link_query));
     }
   }
   else {
@@ -79,9 +89,17 @@ function gallery_assist_display($node, $opt='', $owner='') {
     $page = $_GET['page'];
     $node->gall_pager->cshow = $node->gall_pager->show * $_GET['page'];
 
-    $preview = l($my_previous, $_GET['q'], array('html' => TRUE, 'attributes' => array('class' => $node->type .' pager-previous'), 'query' => array('page' => ($_GET['page'] - 1), 'titles' => $_GET['titles'])));
+    $link_query['page'] = ($_GET['page'] - 1);
+    if (isset($_GET['titles'])) {
+      $link_query['titles'] = $_GET['titles'];
+    }
+    $preview = l($my_previous, $_GET['q'], array('html' => TRUE, 'attributes' => array('class' => $node->type .' pager-previous'), 'query' => $link_query));
     if ($node->gall_pager->cshow < count($my_boxes)) {
-      $next = l($my_next, $_GET['q'], array('html' => TRUE, 'query' => array('page' => ($_GET['page'] + 1), 'titles' => $_GET['titles'])));
+      $link_query['page'] = ($_GET['page'] + 1);
+      if (isset($_GET['titles'])) {
+        $link_query['titles'] = $_GET['titles'];
+      }
+      $next = l($my_next, $_GET['q'], array('html' => TRUE, 'query' => $link_query));
     }
     else {
       $next = "";
@@ -95,8 +113,11 @@ function gallery_assist_display($node, $opt='', $owner='') {
     $link[] = $next;
   }
 
+  // Atrr.
+  $c_w = $opt == 'teaser' && $node->gallconf[$node->type]['t_items_per_row'] > 0 ? $node->gallconf[$node->type]['t_container_width'] : $node->gallconf[$node->type]['container_width'];
   $my_attr_array = array(
-    'style' => 'max-width:'. $node->gallconf[$node->type]['container_width'] .'px;',
+    //'style' => 'max-width:'. $node->gallconf[$node->type]['container_width'] .'px;',
+    'style' => 'max-width:'. $c_w .'px;',
   );
   $stl = array();
   $pstl = array();
@@ -107,9 +128,9 @@ function gallery_assist_display($node, $opt='', $owner='') {
       $boxes .= $my_boxes[$i];
     }
     $node->gallconf[$node->type]['op'] = 'teaser';
-  
+
     if ($conf['layout']['ga_align'] != 'none' || $conf['layout']['t_ga_float'] != 'none') {
-      
+
       //ALIGN TEASER
       switch ($conf['layout']['ga_align']) {
         case 'left':
@@ -188,7 +209,6 @@ function gallery_assist_display($node, $opt='', $owner='') {
           $stl['ml'] = 'margin-left:10px';
           unset($stl['mr']);
           break;
-
       }
     } // end (styles)
     break;
@@ -196,7 +216,8 @@ function gallery_assist_display($node, $opt='', $owner='') {
 
   $my_attr_array['style'] .= implode(';', $stl); 
 
-  $extras['container_width'] = $conf['container_width'];
+  //$extras['container_width'] = $conf['container_width'];
+  $extras['container_width'] = $opt == 'teaser' ? $conf['t_container_width'] : $conf['container_width'];
   $extras['pager_position'] = $conf['pager_position'];
   $extras['pager_style'] = implode(';', $pstl);
 
@@ -206,12 +227,13 @@ function gallery_assist_display($node, $opt='', $owner='') {
   }
 
   $node->gallconf[$node->type]['my_attr'] = $node->gallconf[$node->type]['items_per_row'] == 'unlimited' ? '' : drupal_attributes($my_attr_array);
-  
+  $node->gallconf[$node->type]['nid'] = $node->nid;
+
   if ($owner == 'block') {
     $num = count($block_boxes) < $conf['block_gallery_visibles'] ? count($block_boxes) :  $conf['block_gallery_visibles'];
 
     $rand_boxes = array_rand($block_boxes, $num);
-    
+
     if (count($rand_boxes) > 1) {
       foreach ($rand_boxes as $ks => $divs) {
         $bboxes .= $block_boxes[$ks];
@@ -221,7 +243,6 @@ function gallery_assist_display($node, $opt='', $owner='') {
     else {
       $bboxes .= $block_boxes[0];
     }
-    
     return theme('gallery_assist_block_display', $bboxes, $node->gallconf[$node->type], $node->type);
   }
   else {
@@ -232,41 +253,61 @@ function gallery_assist_display($node, $opt='', $owner='') {
 /**
  * Build and return the gallery item box.
  */
-function gallery_assist_item_box($type, &$item, $conf, $img) {
+function gallery_assist_item_box($type, $item, $conf, $img) {
   global $user;
+
+  $shadow_style = '';
+
+  if ($conf['shadow'] == 1) {
+    $withshadow = ' shadow3';
+    $shadow_style = '-moz-box-shadow:5px 5px 5px;';
+    drupal_add_css(drupal_get_path('module', 'gallery_assist') .'/css/gallery_assist_shadow.css', 'module', 'all', FALSE);
+  }
 
   $item->nodetype = $type;
   $my_title_height = $item->show_title == 1 && $conf['thumbnail_size'] >= 100 ? 30 : 0;
   $my_item_width = $conf['thumbnail_size'] + $conf['thumbnail_size_plus'] + ($conf['item_padding'] * 2) + ($conf['item_border'] * 2);
-  $my_item_height = $conf['thumbnail_size'] + ($conf['item_padding'] * 2) + ($conf['item_border'] * 2) + $my_title_height;
+
+  if (variable_get('gallery_assist_use_imagecache', 0) == 1 && $conf['force_image_height'] == 1) {
+    $my_item_height = $conf['thumbnail_height_size'] + ($conf['item_padding'] * 2) + ($conf['item_border'] * 2) + $my_title_height;
+  }
+  else {
+    $my_item_height = $conf['thumbnail_size'] + ($conf['item_padding'] * 2) + ($conf['item_border'] * 2) + $my_title_height;
+  }
+
   $my_item_attr = array(
     'id' => 'item-box-'. $item->pid,
     'class' => $type .' item-box',
     'style' => 'height:'. $my_item_height .'px;'.
-    'width:'. $my_item_width .'px;',
+               'width:'. $my_item_width .'px;'. 
+               $shadow_style
   );
 
   if ($conf['item_margin'] > 0) {
     $my_item_attr['style'] .= 'margin:'. $conf['item_margin'] .'px;';
   }
+  $my_item_attr['style'] .= 'position:relative;';
 
-  $link = l('edit', 'node/gallery_assist/'. $item->nid .'/'. $item->pid);
+  //$link = l('edit', 'node/gallery_assist/'. $item->nid .'/'. $item->pid, array('query' => array('page' => $_GET['page'])));
   $a_link = '<div id="image-box-'. $item->pid .'-links" class="'. $type .' image-box-links">[ '. $link .' ]</div>'."\n";
 
   $ga_item_attr  = drupal_attributes($my_item_attr);
   $edit_link  = $user->uid == $item->uid ? $a_link : '';
   $ga_item_box   = gallery_assist_image_box($type, $item, $conf, $img);
   $ga_item_title = $item->show_title == 1 && $conf['thumbnail_size'] >= 100 ? gallery_assist_title_box($item, $conf) : '';
-  $ga_edit_link  = $_GET['links'] == 'on' ? $edit_link : '';
-  
+
   $output = theme('gallery_assist_item_box', $ga_item_box, $ga_item_title, $ga_edit_link, $ga_item_attr);
 
   return $output;
 }
 
+/**
+ * Theme the Gallery Assist Item-Box.
+ *
+ * @ingroup themeable
+ */
 function theme_gallery_assist_item_box($ga_item_box, $ga_item_title, $ga_edit_link = '', $ga_item_attr) {
   $output  = '<div'. $ga_item_attr .'>'."\n";
-  $output .= $ga_edit_link;
   $output .= $ga_item_box;
   $output .= $ga_item_title;
   $output .= '</div>'."\n";
@@ -277,85 +318,132 @@ function theme_gallery_assist_item_box($ga_item_box, $ga_item_title, $ga_edit_li
 /**
  * Build and return the image box. 
  */
-function gallery_assist_image_box($type, &$item, $conf, $img) {
+function gallery_assist_image_box($type, $item, $conf, $img) {
+  global $user;
   if ($conf['shadow'] == 1) {
     $withshadow = ' shadow3';
     drupal_add_css(drupal_get_path('module', 'gallery_assist') .'/css/gallery_assist_shadow.css', 'module', 'all', FALSE);
   }
 
-  $my_box_attr = array(
-    'id' => 'image-box-'. $item->pid,
-    'class' => $type .' image-box'. $withshadow,
-    'style' => 'height:'. $conf['thumbnail_size'] + ($conf['item_padding'] * 2) .'px;'.
-               'width:'. $conf['thumbnail_size'] + ($conf['item_padding'] * 2) .'px;',
-  );
+  if (variable_get('gallery_assist_use_imagecache', 0) == 1 && $conf['force_image_height'] == 1) {
+    $my_image_height = $conf['thumbnail_height_size'];
 
-  if ($conf['item_padding'] > 0) {
-    $my_box_attr['style'] .= 'padding:'. $conf['item_padding'] .'px;';
-  }
+    $my_box_attr = array(
+      'id' => 'image-box-'. $item->pid,
+      'class' => $type .' image-box'. $withshadow,
+      'style' => 'height:'. $my_image_height .'px;'.
+                 'width:'. $conf['thumbnail_size'] + ($conf['item_padding'] * 2) .'px;',
+    );
 
-  if ($conf['item_border'] > 0) {
-    $my_box_attr['style'] .= 'border:'. $conf['item_border'] .'px solid '. $conf['item_border_color'] .';';
-  }
+    if ($conf['item_padding'] > 0) {
+      $my_box_attr['style'] .= 'padding:'. $conf['item_padding'] .'px;';
+    }
 
-  $my_sheet_attr = array(
-    'id' => 'image-sheet-'. $item->pid,
-    'class' => $type .' image-sheet'. $my_img_behavior,
-    'style' => 'height:'. $conf['thumbnail_size'] .'px;'.
-               'width:'. $conf['thumbnail_size'] .'px;',
-  );
+    if ($conf['item_border'] > 0) {
+      $my_box_attr['style'] .= 'border:'. $conf['item_border'] .'px solid '. $conf['item_border_color'] .';';
+    }
 
-  $img = gallery_assist_image_more_info($type, $img, $conf);
+    $my_sheet_attr = array(
+      'id' => 'image-sheet-'. $item->pid,
+      'class' => $type .' image-sheet'. $my_img_behavior,
+      'style' => 'height:'. $my_image_height .'px;'.
+                 'width:'. $conf['thumbnail_size'] .'px;',
+    );
 
-  $my_layout = $img['pos'] == 'v' ? 'height' : 'width';
-  $my_img_attr = array(
-    $my_layout => $conf['thumbnail_size'] .'px',
-    'style' => 'margin-top:'. $img['top'] .'px;',
-  );
-
-  /*
-   * Still retained for testing.
-   * 
-  if (module_exists('imagecache') && $conf['use_imagecache'] == 1) {
-    $my_img = theme('imagecache', $conf['thm_presetname'], $item->opath, $item->palt, $item->ptitle, $my_img_attr, FALSE);
+    $img = gallery_assist_image_more_info($type, $img, $conf, $my_image_height);
+  
+    $my_layout = $img['pos'] == 'v' ? 'height' : 'width';
+    $my_img_attr = array(
+      $my_layout => $conf['thumbnail_size'],
+      'style' => 'margin-top:'. $img['top'] .'px;',
+    );
   }
   else {
-    $my_img = theme('image', $item->tpath, $item->palt, $item->ptitle, $my_img_attr, FALSE);
-  }
-  */
+    $my_box_attr = array(
+      'id' => 'image-box-'. $item->pid,
+      'class' => $type .' image-box'. $withshadow,
+      'style' => 'height:'. $conf['thumbnail_size'] + ($conf['item_padding'] * 2) .'px;'.
+                 'width:'. $conf['thumbnail_size'] + ($conf['item_padding'] * 2) .'px;',
+    );
+
+    if ($conf['item_padding'] > 0) {
+      $my_box_attr['style'] .= 'padding:'. $conf['item_padding'] .'px;';
+    }
+
+    if ($conf['item_border'] > 0) {
+      $my_box_attr['style'] .= 'border:'. $conf['item_border'] .'px solid '. $conf['item_border_color'] .';';
+    }
+
+    //$my_box_attr['style'] .= 'position:relative;';
+
+    $my_sheet_attr = array(
+      'id' => 'image-sheet-'. $item->pid,
+      'class' => $type .' image-sheet'. $my_img_behavior,
+      'style' => 'height:'. $conf['thumbnail_size'] .'px;'.
+                 'width:'. $conf['thumbnail_size'] .'px;',
+    );
+
+    $img = gallery_assist_image_more_info($type, $img, $conf);
+
+    $my_layout = $img['pos'] == 'v' ? 'height' : 'width';
+    $my_img_attr = array(
+      $my_layout => $conf['thumbnail_size'],
+      'style' => 'margin-top:'. $img['top'] .'px;',
+    );
+  } // without
+
+  $edit_link_attr = array(
+    'class' => $type .' ga-item-edit-link',
+    'style' => 'position:absolute;top:0px;left:0px;width:100%;',
+  );
 
   $item->my_img_attr = $my_img_attr;
   $my_img = gallery_assist_prepare_thms($item, $conf);
+//dsm($conf);
+  $get_values = $_GET;
+  unset($get_values['q']);
+  $link = l('[edit]', 'node/ga_edit_one/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
+  $a_link = '<div id="image-box-'. $item->pid .'-links" class="'. $type .' image-box-links">[ '. $link .' ]</div>'."\n";
+  $edit_link  = $user->uid == 1 || $user->uid == $item->uid || user_access('edit gallery_assist content', $user) || user_access('edit gallery_assist_'. $type .' content', $user) ? $link : '';
 
-  $output  = '<div'. drupal_attributes($my_box_attr) .'>'."\n";
-  $output .= '  <div'. drupal_attributes($my_sheet_attr) .'>'."\n";
-  $output .= '    '. l($my_img, 'node/'. $item->nid .'/'. $item->pid, array('html' => TRUE));
-  $output .= '  </div>'."\n";
-  $output .= '</div>'."\n";
+  $link_query = array();
+  if (isset($_GET['page'])) {
+    $link_query['page'] = $_GET['page'];
+  }
+  if (isset($_GET['titles'])) {
+    $link_query['titles'] = $_GET['titles'];
+  }
+  $output2  = '<div'. drupal_attributes($my_box_attr) .'>'."\n";
+  $output2 .= '<div'. drupal_attributes($my_sheet_attr) .'>'."\n";
+  $output2 .= '    '. l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE, 'query' => $link_query));
+  $output2 .= '</div>'."\n";
+  $output2 .= '</div>'."\n";
+  $output2 .= '<div'. drupal_attributes($edit_link_attr) .'>'. $edit_link .'</div>'."\n";
 
-  return $output;
+  return $output2;
 }
 
 /**
  * Build and return the item title box. 
  */
-function gallery_assist_title_box(&$item, $conf) {
+function gallery_assist_title_box($item, $conf) {
   $points = drupal_strlen($item->ptitle) > $conf['title_substr'] ? "..." : '';
   $title = drupal_substr($item->ptitle, 0, $conf['title_substr']) . $points;
 
   $output  = '<div id="title-box-'. $item->pid .'" class="'. $item->nodetype .' title-box">'."\n";
-  $output .= l($title, 'node/'. $item->nid .'/'. $item->pid, array('html' => TRUE, 'attributes' => array('title' => $item->ptitle)));
+  $output .= l($title, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE, 'attributes' => array('title' => $item->ptitle)));
   $output .= '</div>'."\n";
 
   return $output;
 }
 
 /**
- * Theme the item output.
+ * Theme the Gallery Assist Container as grid.
+ *
+ * @ingroup themeable
  */
-function theme_gallery_assist_display(&$pager, &$boxes, $conf, $type = 'gallery_assist') {
-
-  $output  = '<div id="gallery-container" class="'. $type .' gallery-container '. $conf['op'] .' clear-block"'. $conf['my_attr'] .'>';
+function theme_gallery_assist_display($pager, $boxes, $conf, $type = 'gallery_assist') {
+  $output  = '<div id="gallery-container-'. $conf['nid'] .'" class="'. $type .' gallery-container '. $conf['op'] .' clear-block"'. $conf['my_attr'] .'>';
   $output .= $conf['pager_position'] == 'top' || $conf['pager_position'] == 'both' ? $pager : '';
   $output .= $boxes;
   $output .= $conf['pager_position'] == 'bottom' || $conf['pager_position'] == 'both' ? $pager : '';
@@ -363,4 +451,3 @@ function theme_gallery_assist_display(&$pager, &$boxes, $conf, $type = 'gallery_
 
   return  $output;
 }
-
