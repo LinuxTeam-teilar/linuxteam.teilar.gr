@@ -1,0 +1,29 @@
+<!-- $Id: folder-structure.html,v 1.5 2010/10/28 20:31:48 jcmc Exp $ -->
+
+Gallery Assist (GA) folder structure.
+
+The folder structure of GA is easy to understand. It depends on the following cases:
+
+<h3>ImageCache not available</h3>
+A global gallery folder (<strong>gallery_assist</strong>) wich contains all galleries created through GA.<br />
+A gallery user folder (called with the <strong>User-ID</strong>) wich contains the galleries belongin to the respectively user.<br />
+The gallery preset folders.
+
+<ul>
+<li>
+<strong>img</strong>:<br />
+Contains mini thumbnails for the GA pager.</li>
+<li>
+<strong>thm</strong>:<br />
+Contains the thumbnails of the gallery so long <em>Gallery Assist ImageCache</em> is not installed.</li>
+<li>
+<strong>prev</strong>:<br />
+Contains the preview images of the gallery so long <em>Gallery Assist ImageCache</em> is not installed.</li>
+</ul>
+
+<h3>ImageCache available</h3>
+The <?php print l('ImageCache', 'http://www.drupal.org/project/imagecache'); ?> module and the <?php print l('Gallery Assist ImageCache', 'http://www.drupal.org/project/gallery_assist_ic'); ?> module are activated.
+A little <?php print l('docu about Gallery Assist ImageCache', 'node/61'); ?> (GAIC).
+
+Thumbnails and preview images are no longer produced from GA.<br />
+At this point is ImageCache responsible for this task.
