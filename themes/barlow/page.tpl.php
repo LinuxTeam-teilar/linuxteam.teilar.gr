@@ -17,7 +17,8 @@ $language->language ?>" xmlns="http://www.w3.org/1999/xhtml">
 
   <div id="branding">
   <?php if ($logo){ ?>
-    <img src="<?php print check_url($logo) ?>" alt="<?php print $site_name ?>" id="logo" />
+    //<img src="<?php print check_url($logo) ?>" alt="<?php print $site_name ?>" id="logo" />
+	<img src="/~etern4l/logo-b.png" alt="<?php  print $site_name ?>" id="logo" />
   <?php } ?>
   <?php if ($site_name){ ?>
     <h1><a href="<?php print url() ?>" title="<?php print t('Home') ?>" rel="home"><?php print $site_name ?></a></h1>
