@@ -293,41 +293,4 @@ function wysiwyg_ckeditor_plugins($editor) {
       'buttons' => array(
         'Bold' => t('Bold'), 'Italic' => t('Italic'), 'Underline' => t('Underline'),
         'Strike' => t('Strike-through'),
-        'JustifyLeft' => t('Align left'), 'JustifyCenter' => t('Align center'), 'JustifyRight' => t('Align right'), 'JustifyBlock' => t('Justify'),
-        'BulletedList' => t('Bullet list'), 'NumberedList' => t('Numbered list'),
-        'Outdent' => t('Outdent'), 'Indent' => t('Indent'),
-        'Undo' => t('Undo'), 'Redo' => t('Redo'),
-        'Link' => t('Link'), 'Unlink' => t('Unlink'), 'Anchor' => t('Anchor'),
-        'Image' => t('Image'),
-        'TextColor' => t('Forecolor'), 'BGColor' => t('Backcolor'),
-        'Superscript' => t('Superscript'), 'Subscript' => t('Subscript'),
-        'Blockquote' => t('Blockquote'), 'Source' => t('Source code'),
-        'HorizontalRule' => t('Horizontal rule'),
-        'Cut' => t('Cut'), 'Copy' => t('Copy'), 'Paste' => t('Paste'),
-        'PasteText' => t('Paste Text'), 'PasteFromWord' => t('Paste from Word'),
-        'ShowBlocks' => t('Show blocks'),
-        'RemoveFormat' => t('Remove format'),
-        'SpecialChar' => t('Character map'),
-        'Format' => t('HTML block format'), 'Font' => t('Font'), 'FontSize' => t('Font size'), 'Styles' => t('Font style'),
-        'Table' => t('Table'),
-        'SelectAll' => t('Select all'), 'Find' => t('Search'), 'Replace' => t('Replace'),
-        'Flash' => t('Flash'), 'Smiley' => t('Smiley'),
-        'CreateDiv' => t('Div container'),
-        'Iframe' => t('iFrame'),
-        'Maximize' => t('Maximize'),
-        'SpellChecker' => t('Check spelling'), 'Scayt' => t('Check spelling as you type'),
-        'About' => t('About'),
-      ),
-      'internal' => TRUE,
-    ),
-  );
-
-  if (version_compare($editor['installed version'], '3.1.0.4885', '<')) {
-    unset($plugins['default']['buttons']['CreateDiv']);
-  }
-  if (version_compare($editor['installed version'], '3.5.0.6260', '<')) {
-    unset($plugins['default']['buttons']['Iframe']);
-  }
-  return $plugins;
-}
-
+        'JustifyLeft' => t('Align left'), 'JustifyCenter' => t('Align center'), 'JustifyRight' => t('Align right'), 'JustifyBloc                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             

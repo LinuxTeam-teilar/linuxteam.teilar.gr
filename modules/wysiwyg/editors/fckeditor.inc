@@ -286,7 +286,4 @@ function wysiwyg_fckeditor_plugins($editor) {
       'internal' => TRUE,
       'load' => TRUE,
     ),
-  );
-  return $plugins;
-}
-
+                           
